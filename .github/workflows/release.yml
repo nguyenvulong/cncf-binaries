@@ -25,8 +25,7 @@ jobs:
           fi
           # Rename it to 'kubectl'
           echo "Found kubectl file: $KUBECTL_FILE"
-          cp "$KUBECTL_FILE" ./kubectl  # Copy the file as 'kubectl'
-      
+          
       # Create tar.gz archive that includes kubectx/kubectx, kubectx/kubens, and the renamed kubectl
       - name: Create tar.gz of selected files
         run: |
@@ -35,7 +34,7 @@ jobs:
           cp kubectx/kubectx ./release/kubectx
           cp kubectx/kubens ./release/kubens
           # Copy the renamed kubectl
-          cp ./kubectl ./release/kubectl
+          cp $KUBECTL_FILE ./release/kubectl
           # Create the tarball
           tar -czvf release/my-release.tar.gz -C release kubectx kubens kubectl
       
