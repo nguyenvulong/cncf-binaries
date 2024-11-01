@@ -2,19 +2,26 @@ name: Update Kubectl Binary
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs daily at midnight UTC
-  workflow_dispatch: # Allows manual trigger of the workflow
+    - cron: '0 0 * * *'  # Runs daily at midnight UTC
+  workflow_dispatch:     # Allows manual trigger of the workflow
   
 permissions:
-  contents: write # Grant write access to the repository contents
+  contents: write         # Grant write access to the repository contents
   
 jobs:
   update-kubectl:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository with Git LFS support
         uses: actions/checkout@v4
+        with:
+          lfs: true         # Enable Git LFS support
+
+      - name: Install Git LFS (just in case)
+        run: |
+          sudo apt-get install -y git-lfs
+          git lfs install   # Ensure Git LFS is initialized (first time only)
 
       - name: Set up GitHub credentials
         run: |
@@ -30,7 +37,7 @@ jobs:
       - name: Check if latest release is already in repository
         id: check_existing_release
         run: |
-          if git ls-tree -r HEAD --name-only | grep -q "kubectl_${latest_release}"; then
+          if git ls-tree -r HEAD --name-only | grep -q "kubectl_${{ env.latest_release }}"; then
             echo "Latest release already exists in the repository."
             exit 0
           fi
@@ -39,21 +46,22 @@ jobs:
         run: |
           mkdir -p kubectl-latest
           for ARCH in amd64 arm64; do
-            curl -L "https://dl.k8s.io/release/${{ env.latest_release }}/bin/linux/${ARCH}/kubectl" \
+            curl -LO "https://dl.k8s.io/release/${{ env.latest_release }}/bin/linux/${ARCH}/kubectl" \
                  -o "kubectl-latest/kubectl_${{ env.latest_release }}_${ARCH}"
           done
           ls kubectl-latest
 
       - name: Add downloaded binaries to repository
         run: |
+          # Overwrite existing kubectl binaries with new ones
           rm -rf kubectl
           mv kubectl-latest kubectl
           ls kubectl
-          git add .
+          git add .            # Git LFS will take care to track these files correctly (thanks to .gitattributes)
 
       - name: Commit changes
         run: |
-          git commit -m "Update kubectl binaries to version ${{ env.latest_release }}"
+          git commit -m "Update kubectl binaries to version ${{ env.latest_release }}" || echo "No changes to commit"
 
       - name: Push changes to repository
         run: |
