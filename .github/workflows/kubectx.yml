@@ -1,4 +1,4 @@
-name: Update Kubectx Binaries
+name: Update Kubectx and Kubens Binaries
 
 on:
   schedule:
