@@ -24,7 +24,7 @@ jobs:
       - name: Get latest release of kubectl
         id: get_latest_release
         run: |
-          latest_release=$(curl -s https://dl.k8s.io/release/stable.txt)
+          latest_release=$(curl -L -s https://dl.k8s.io/release/stable.txt)
           echo "latest_release=$latest_release" >> $GITHUB_ENV
 
       - name: Check if latest release is already in repository
