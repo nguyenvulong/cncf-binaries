@@ -42,11 +42,13 @@ jobs:
             curl -LO "https://dl.k8s.io/release/${{ env.latest_release }}/bin/linux/${ARCH}/kubectl" \
                  -o "kubectl-latest/kubectl_${{ env.latest_release }}_${ARCH}"
           done
+          ls kubectl-latest
 
       - name: Add downloaded binaries to repository
         run: |
           rm -rf kubectl
           mv kubectl-latest kubectl
+          ls kubectl
           git add .
 
       - name: Commit changes
