@@ -13,6 +13,11 @@ jobs:
       - name: Checkout utils repository
         uses: actions/checkout@v3
 
+      - name: Set up GitHub credentials
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
       - name: Get latest release of kubectx
         id: get_latest_release
         run: |
@@ -33,11 +38,6 @@ jobs:
           curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest \
             | jq -r '.assets[] | select(.name | test("kubectx|kubens")) | .browser_download_url' \
             | xargs -n 1 -I {} wget -P kubectx-latest {}
-
-      - name: Set up GitHub credentials
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Add downloaded binaries to repository
         run: |
