@@ -46,7 +46,7 @@ jobs:
         run: |
           mkdir -p kubectl-latest
           for ARCH in amd64 arm64; do
-            curl -LO "https://dl.k8s.io/release/${{ env.latest_release }}/bin/linux/${ARCH}/kubectl" \
+            curl -L "https://dl.k8s.io/release/${{ env.latest_release }}/bin/linux/${ARCH}/kubectl" \
                  -o "kubectl-latest/kubectl_${{ env.latest_release }}_${ARCH}"
           done
           ls kubectl-latest
