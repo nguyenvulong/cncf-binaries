@@ -34,25 +34,23 @@ jobs:
             | jq -r '.assets[] | select(.name | test("kubectx|kubens")) | .browser_download_url' \
             | xargs -n 1 -I {} wget -P kubectx-latest {}
 
+      - name: Set up GitHub credentials
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Add downloaded binaries to repository
         run: |
           mv kubectx-latest/* .
           rm -rf kubectx-latest
           git add .
-          git commit -m "Update kubectx binaries to version ${{ env.latest_release }}"
 
-      - name: Push changes
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false # Ensures GitHub token is used correctly
-
-      - name: Set up GitHub credentials
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit changes
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update kubectx binaries to version ${{ env.latest_release }}"
 
       - name: Push changes to repository
         run: |
           git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
