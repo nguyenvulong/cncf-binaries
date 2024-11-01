@@ -1,0 +1,60 @@
+name: Update Kubectl Binaries
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+  workflow_dispatch: # Allows manual trigger of the workflow
+  
+permissions:
+  contents: write # Grant write access to the repository contents
+  
+jobs:
+  update-kubectl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up GitHub credentials
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Get latest release of kubectl
+        id: get_latest_release
+        run: |
+          latest_release=$(curl -s https://dl.k8s.io/release/stable.txt)
+          echo "latest_release=$latest_release" >> $GITHUB_ENV
+
+      - name: Check if latest release is already in repository
+        id: check_existing_release
+        run: |
+          if git ls-tree -r HEAD --name-only | grep -q "kubectl_${latest_release}"; then
+            echo "Latest release already exists in the repository."
+            exit 0
+          fi
+
+      - name: Download latest kubectl binaries
+        run: |
+          mkdir -p kubectl-latest
+          for ARCH in amd64 arm64; do
+            curl -LO "https://dl.k8s.io/release/${{ env.latest_release }}/bin/linux/${ARCH}/kubectl" \
+                 -o "kubectl-latest/kubectl_${{ env.latest_release }}_${ARCH}"
+          done
+
+      - name: Add downloaded binaries to repository
+        run: |
+          rm -rf kubectl
+          mv kubectl-latest kubectl
+          git add .
+
+      - name: Commit changes
+        run: |
+          git commit -m "Update kubectl binaries to version ${{ env.latest_release }}"
+
+      - name: Push changes to repository
+        run: |
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
