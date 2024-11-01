@@ -1,4 +1,4 @@
-name: Update Kubectl Binaries
+name: Update Kubectl Binary
 
 on:
   schedule:
