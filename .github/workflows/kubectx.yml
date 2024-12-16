@@ -48,11 +48,23 @@ jobs:
           mv kubectx-latest kubectx
           git add .
 
+      - name: Check for changes before committing
+        id: check_changes
+        run: |
+          if git diff-index --quiet HEAD; then
+            echo "No changes detected. Skipping commit and push."
+            echo "skip_commit=true" >> $GITHUB_ENV
+          else
+            echo "Changes detected. Proceeding with commit and push."
+            echo "skip_commit=false" >> $GITHUB_ENV
+
       - name: Commit changes
+        if: env.skip_commit == 'false'
         run: |
           git commit -m "Update kubectx binaries to version ${{ env.latest_release }}"
 
       - name: Push changes to repository
+        if: env.skip_commit == 'false'
         run: |
           git push origin main
         env:
